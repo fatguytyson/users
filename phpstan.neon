@@ -3,5 +3,3 @@ parameters:
     level: 5
 includes:
 	- vendor/phpstan/phpstan-symfony/extension.neon
-rules:
-	- Symplify\CodingStandard\Rules\NoDebugFuncCallRule

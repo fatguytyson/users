@@ -24,14 +24,13 @@ class UserEventSubscriber implements EventSubscriberInterface, ExtensionConfigIn
 
         $roles = [];
         foreach ($configRoles as $role) {
-            $accessTo = array_keys($cts->filter(function(Collection $ct) use ($role) {
+            $accessTo = array_keys($cts->filter(function (Collection $ct) use ($role) {
                 return $ct->has('allow_for_groups') && $ct->get('allow_for_groups')->contains($role);
             })->toArray());
 
             $roles[$role] = empty($accessTo) ? '' : 'Grants access to  ' .
-                implode(",", $accessTo);
+                implode(',', $accessTo);
         }
-
 
         $event->setRoleOptions($event->getRoleOptions()->merge($roles));
     }

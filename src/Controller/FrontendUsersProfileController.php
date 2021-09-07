@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Bolt\UsersExtension\Controller;
 
-use Bolt\Controller\Backend\BackendZoneInterface;
 use Bolt\Configuration\Config;
 use Bolt\Configuration\Content\ContentType;
+use Bolt\Controller\Backend\BackendZoneInterface;
 use Bolt\Controller\Backend\ContentEditController;
 use Bolt\Controller\TwigAwareController;
 use Bolt\Entity\Content;
@@ -67,24 +67,26 @@ class FrontendUsersProfileController extends AccessAwareController implements Ba
         /** @var User $user */
         $user = $this->getUser();
         if ($user instanceof User && $this->isGranted('ROLE_ADMIN')) {
-            return $this->redirectToRoute('bolt_user_edit', ['id' => $user->getId()]);
+            return $this->redirectToRoute('bolt_user_edit', [
+                'id' => $user->getId(),
+            ]);
         }
-        
-        if ($user !== null /* Ensure there is an active user logged on*/ ) {
+
+        if ($user !== null /* Ensure there is an active user logged on*/) {
             $contentTypeSlug = $this->getExtension()->getExtConfig('contenttype', $user->getRoles()[0]);
-            
+
             /** @var ContentType $contentType */
             $contentType = $this->getBoltConfig()->getContentType($contentTypeSlug);
             $this->applyAllowForGroupsGuard($contentType);
 
             return $this->twigAwareController->renderSingle($this->getUserRecord($contentType));
         }
-        else {
-            // If session was invalidated or ended, redirect user as needed when they try to access profile
-            // For instance, redirect to login page to prompt re-authentication
-            $redirectRoute = $this->getExtension()->getExtConfig('redirect_on_session_null');
-            return $this->redirect($redirectRoute);
-        }
+
+        // If session was invalidated or ended, redirect user as needed when they try to access profile
+        // For instance, redirect to login page to prompt re-authentication
+        $redirectRoute = $this->getExtension()->getExtConfig('redirect_on_session_null');
+
+        return $this->redirect($redirectRoute);
     }
 
     /**
@@ -93,9 +95,8 @@ class FrontendUsersProfileController extends AccessAwareController implements Ba
     public function edit(ContentType $contentType, Request $request): Response
     {
         $user = $this->getUser();
-        
-        if ($user !== null /* Ensure there is an active user logged on*/ ) {
-            
+
+        if ($user !== null /* Ensure there is an active user logged on*/) {
             $this->applyIsAuthenticatedGuard();
 
             $contentTypeSlug = $this->getExtension()->getExtConfig('contenttype', $this->getUser()->getRoles()[0]);
@@ -109,6 +110,7 @@ class FrontendUsersProfileController extends AccessAwareController implements Ba
 
             if ($request->getMethod() === 'POST') {
                 $this->contentEditController->save($content);
+
                 return $this->redirectToRoute('extension_frontend_user_profile');
             }
 
@@ -121,19 +123,19 @@ class FrontendUsersProfileController extends AccessAwareController implements Ba
 
             return $this->twigAwareController->renderTemplate($templates, $parameters);
         }
-        else {
-            // If session was invalidated or ended, redirect user as needed when they try to access profile
-            // For instance, redirect to login page to prompt re-authentication
-            $redirectRoute = $this->getExtension()->getExtConfig('redirect_on_session_null');
-            return $this->redirect($redirectRoute);
-        }
+
+        // If session was invalidated or ended, redirect user as needed when they try to access profile
+        // For instance, redirect to login page to prompt re-authentication
+        $redirectRoute = $this->getExtension()->getExtConfig('redirect_on_session_null');
+
+        return $this->redirect($redirectRoute);
     }
 
     private function getUserRecord(ContentType $contentType): Content
     {
         /** @var User $user */
         $user = $this->getUser();
-        
+
         // Access user record, if available
         $contentTypeSlug = $this->getExtension()->getExtConfig('contenttype', $user->getRoles()[0]);
         $contentType = $this->getBoltConfig()->getContentType($contentTypeSlug);
@@ -142,15 +144,14 @@ class FrontendUsersProfileController extends AccessAwareController implements Ba
             'author' => $user,
             'contentType' => $contentType->getSlug(),
         ]);
-        
+
         // If user record unavailable, create it
         if (empty($content)) {
             return $this->new($contentType);
-        } 
-        elseif (is_iterable($content)) {
+        } elseif (is_iterable($content)) {
             $content = end($content);
         }
-        
+
         return $content;
     }
 
@@ -161,31 +162,34 @@ class FrontendUsersProfileController extends AccessAwareController implements Ba
         $user = $this->getUser();
         $contentTypeSlug = $this->getExtension()->getExtConfig('contenttype', $user->getRoles()[0]);
         $contentType = $this->getBoltConfig()->getContentType($contentTypeSlug);
-        
+
         $content = new Content($contentType);
         $content->setAuthor($user);
         $content->setCreatedAt(new \DateTime());
         $content->setPublishedAt(new \DateTime());
         $content->setStatus(Statuses::PUBLISHED);
-        $contentTypeName = strtolower($contentType->get('name', $contentType->get('slug')));
+        $contentTypeName = mb_strtolower($contentType->get('name', $contentType->get('slug')));
         $content->setContentType($contentTypeName);
-        $content->setFieldValue('displayName', $user->getDisplayName()); // Hidden field for record title
-        $content->setFieldValue('username', $user->getUsername()); // Hidden field with copy of username
-        $content->setFieldValue('slug', $user->getUsername()); // Make slugs unique to users
-        
+        // Hidden field for record title
+        $content->setFieldValue('displayName', $user->getDisplayName());
+        // Hidden field with copy of username
+        $content->setFieldValue('username', $user->getUsername());
+        // Make slugs unique to users
+        $content->setFieldValue('slug', $user->getUsername());
+
         // Initialise ALL extra fields as defined in the contenttype with empty strings.
         // This ensures they are displayed on the /profile/edit route without backend intervention
-        foreach($contentType->get('fields') as $name => $field){
-
-            if(!in_array($name, ['displayName','username','slug'])) {
+        foreach (array_keys($contentType->get('fields')) as $name) {
+            if (! \in_array($name, ['displayName', 'username', 'slug'], true)) {
                 $content->setFieldValue($name, '');
             }
         }
-        
+
         $this->contentFillListener->fillContent($content);
 
         // Persist in DB
         $this->saveContent($content);
+
         return $content;
     }
 
@@ -195,5 +199,4 @@ class FrontendUsersProfileController extends AccessAwareController implements Ba
         $this->em->persist($content);
         $this->em->flush();
     }
-
 }

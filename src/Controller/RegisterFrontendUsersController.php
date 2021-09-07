@@ -78,7 +78,7 @@ class RegisterFrontendUsersController extends ExtensionController implements Ext
         $user->setDisplayName($this->request->get('displayname', $user->getUsername()));
 
         $role = $this->request->get('group');
-        if (in_array($role, $this->forbiddenRoles, true)) {
+        if (\in_array($role, $this->forbiddenRoles, true)) {
             $role = 'ROLE_USER';
         }
 

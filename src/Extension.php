@@ -17,12 +17,12 @@ class Extension extends BaseExtension
     {
         $groups = $this->getConfig()->get('groups', []);
 
-        if (array_key_exists($group, $groups) && array_key_exists($config, $groups[$group])) {
+        if (\array_key_exists($group, $groups) && \array_key_exists($config, $groups[$group])) {
             return $groups[$group][$config];
         }
 
         $default = $this->getConfig()->get('default', []);
-        if (in_array($config, array_keys($default), true)) {
+        if (\in_array($config, array_keys($default), true)) {
             return $default[$config];
         }
 

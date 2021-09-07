@@ -66,7 +66,7 @@ class LoginFormExtension extends AbstractExtension implements ExtensionConfigInt
     public function getUsernameField(bool $withLabel, array $labels): string
     {
         $name = $this->useOldLoginForm() ? 'username' : 'login[username]';
-        $text = array_key_exists('username', $labels) ? $labels['username'] : 'Username';
+        $text = \array_key_exists('username', $labels) ? $labels['username'] : 'Username';
         $label = $withLabel ? sprintf('<label for="%s">%s</label>', $name, $text) : '';
 
         $input = sprintf('<input type="text" id="username" name="%s">', $name);
@@ -77,7 +77,7 @@ class LoginFormExtension extends AbstractExtension implements ExtensionConfigInt
     public function getPasswordField(bool $withLabel, array $labels): string
     {
         $name = $this->useOldLoginForm() ? 'password' : 'login[password]';
-        $text = array_key_exists('password', $labels) ? $labels['password'] : 'Password';
+        $text = \array_key_exists('password', $labels) ? $labels['password'] : 'Password';
         $label = $withLabel ? sprintf('<label for="%s">%s</label>', $name, $text) : '';
 
         $input = sprintf('<input type="password" id="password" name="%s">', $name);
@@ -87,7 +87,7 @@ class LoginFormExtension extends AbstractExtension implements ExtensionConfigInt
 
     public function getEmailField(bool $withLabel, array $labels): string
     {
-        $text = array_key_exists('email', $labels) ? $labels['email'] : 'Email';
+        $text = \array_key_exists('email', $labels) ? $labels['email'] : 'Email';
         $label = $withLabel ? sprintf('<label for="email">%s</label>', $text) : '';
 
         $input = '<input type="email" id="email" name="email">';
@@ -97,7 +97,7 @@ class LoginFormExtension extends AbstractExtension implements ExtensionConfigInt
 
     public function getSubmitButton(array $labels = []): string
     {
-        $text = array_key_exists('submit', $labels) ? $labels['submit'] : 'Submit';
+        $text = \array_key_exists('submit', $labels) ? $labels['submit'] : 'Submit';
 
         return sprintf('<input type="submit" value="%s">', $text);
     }
@@ -123,7 +123,8 @@ class LoginFormExtension extends AbstractExtension implements ExtensionConfigInt
         return sprintf('<input type="hidden" name="_target_path" value="%s">', $pathOrUrl);
     }
 
-    private function useOldLoginForm(): bool{
+    private function useOldLoginForm(): bool
+    {
         return Version::compare('4.2.2', '>=');
     }
 }
